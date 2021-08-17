@@ -10,7 +10,7 @@ function MeetupDetails(props) {
       <title>{props.meetupData.title}</title>
       <meta name="description" content={props.meetupData.description}></meta>
     </Head>
-    <MeetupDetail  meetup = {props.meetupData}/>
+    <MeetupDetail  meetup = {props.meetupData}/> 
   </Fragment>
 }
 
@@ -21,7 +21,7 @@ export async function getStaticPaths() {
   const meetups = await meetupsCollection.find({}, {_id:1}).toArray()
   client.close()
   return {
-    fallback: false,
+    fallback: 'blocking',
     paths: meetups.map(meetup => ({
       params: {
         meetupId: meetup._id.toString()
