@@ -1,21 +1,5 @@
 import MeetupList from "../components/meetups/MeetupList";
-
-const DUMMY_MEETUP = [
-  {
-    id: "1",
-    name: "Dummy meetup",
-    image:
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/PonNagarChamTowers.jpg/1280px-PonNagarChamTowers.jpg",
-    address: "123 Fake Street, Fake City,Fake State,Fake Country",
-  },
-  {
-    id: "2",
-    name: "Second Dummy meetup",
-    image:
-      "https://cdn.vntrip.vn/cam-nang/wp-content/uploads/2017/08/bo-bien-vinpearl-bai-dai-nha-trang2-e1504670930803.jpg",
-    address: "123 Fake Street, Fake City,Fake State,Fake Country",
-  },
-];
+import { MongoClient } from "mongodb";
 
 function HomePage(props) {
 
@@ -23,26 +7,36 @@ function HomePage(props) {
 }
 
 //always run on the server
-export async function getServerSideProps(context) {
-  const req = context.req;
-  const res = context.res;
+// export async function getServerSideProps(context) {
+//   const req = context.req;
+//   const res = context.res;
 
   
-  return {
-    props: {
-      meetups: DUMMY_MEETUP,
-    }
-  }
-}
-
-//only run on the build process
-// export async function getStaticProps(){
-//   //fetch data from an API
 //   return {
 //     props: {
 //       meetups: DUMMY_MEETUP,
-//     },
-//     revalidate: 3600
+//     }
 //   }
 // }
+
+//only run on the build process
+export async function getStaticProps(){
+  //fetch data from an API
+  const client = await MongoClient.connect("mongodb+srv://nam:1qaz@cluster0.nwfyp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
+  const db = client.db()
+  const meetupsCollection = db.collection('meetups')
+  const meetups = await meetupsCollection.find().toArray()
+  client.close()
+  return {
+    props: {
+      meetups: meetups.map(meetup =>({
+        title: meetup.title,
+        image: meetup.image,
+        address: meetup.address,
+        id: meetup._id.toString(),
+      })),
+    },
+    revalidate: 1
+  }
+}
 export default HomePage;
